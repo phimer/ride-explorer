@@ -1,12 +1,16 @@
 import React from 'react'
 import RideAnalyzer from '@/app/components/RideAnalyzer';
+import Header from '@/app/components/Header';
 
 
 const page = () => {
     return (
-      <div className="main-div">
-        <RideAnalyzer></RideAnalyzer>
-      </div>
+      <>
+        <Header />
+        <div className="main-div">
+          <RideAnalyzer></RideAnalyzer>
+        </div>
+      </>
     )
 }
 

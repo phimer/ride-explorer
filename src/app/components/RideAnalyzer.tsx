@@ -60,6 +60,28 @@ export type LapDataType ={
   }
 
 
+export const formatTime = (ms: number | undefined): string => {
+
+    if (!ms) {
+        return '';
+    }
+
+    const totalSeconds: number = Math.floor(ms / 1000);
+
+    const hours: number = Math.floor(totalSeconds / 3600);
+    const remainingSeconds: number = totalSeconds % 3600;
+
+    const minutes: number = Math.floor(remainingSeconds / 60);
+    const seconds: number = remainingSeconds % 60;
+    
+    return `${hours > 0 ? hours+':' : ''}${minutes < 10 ? '0'+minutes : minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+};
+
+
+
+export function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 const RideAnalyzer: React.FC = (): ReactElement => {
 
@@ -91,11 +113,9 @@ const RideAnalyzer: React.FC = (): ReactElement => {
             console.log('setting time span');
             const start: Date = rideDataSlice[0].timestamp;
             const end: Date = rideDataSlice[rideDataSlice.length - 1].timestamp;
-            const timespanInMilliSeconds: any = Math.abs(end.getTime()-start.getTime());
-            const timespanInMinutes: number = Math.round(timespanInMilliSeconds / 60000);
-            const timespanInMinutesAndSeconds: number = Math.round(timespanInMilliSeconds / 1000);
+            const timespanInMilliSeconds: number = Math.abs(end.getTime()-start.getTime());
             setTimespanStartEnd([start, end]);
-            setTimespan(timespanInMinutes);
+            setTimespan(timespanInMilliSeconds);
 
                         
             console.log('setting avg power');
@@ -192,20 +212,20 @@ const RideAnalyzer: React.FC = (): ReactElement => {
             hoverinfo: 'y+text',
             hovertext: 'BPM',
         },
-        {
-            x: rideData.map(d => d.timestamp),
-            y: rideData.map(d => d.altitude*10 ),
-            mode: 'lines',
-            type: 'scatter',
-            hoverinfo: 'y+text',
-            hovertext: 'Meters',
-        },
+        // {
+        //     x: rideData.map(d => d.timestamp),
+        //     y: rideData.map(d => d.altitude*10 ),
+        //     mode: 'lines',
+        //     type: 'scatter',
+        //     hoverinfo: 'y+text',
+        //     hovertext: 'Meters',
+        // },
 ]: [];
 
     // Layout configuration for the plot
     const layout: Partial<Layout> = {
         uirevision: 'true',
-        title: 'Ride Data',
+        // title: 'Ride Data',
         xaxis: {
             title: 'Time',
         },
@@ -230,44 +250,51 @@ const RideAnalyzer: React.FC = (): ReactElement => {
     };
 
 
-    function sleep(ms: number): Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-
     return (
         <div className='ride-analyzer-div'>
-            <button 
-                onClick={() => parseFitFile('2024-05-15-154558-ELEMNT BOLT C5A3-45-0.fit')}
-                className="parse-button bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >{rideData ? 'parse again' : 'parse'}</button>
+            <div className='input-div'>
+                <input></input>
+                <button 
+                    onClick={() => parseFitFile('2024-05-15-154558-ELEMNT BOLT C5A3-45-0.fit')}
+                    className="parse-button bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                >{rideData ? 'parse again' : 'parse'}</button>
+            </div>
 
-            {rideData && <div>
-                <div>Time Span: {timespanStartEnd[0].toLocaleTimeString()} - {timespanStartEnd[1].toLocaleTimeString()}</div>
-                <div>Time Span in Minutes: {timespan}</div>
-                <div>Average Power: {averagePower}</div>
-                <div>Average Heatrate: {averageHeartrate}</div>
-            </div>}
+            <div className='lap-data-div'>
+                {rideData && <button
+                    onClick={() => setShowLapData(!showLapData)}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                >{!showLapData? 'Show Lap Data' : 'Hide Lap Data'}</button>}
 
-            {rideData && <button
-                onClick={() => setShowLapData(!showLapData)}
-                className="parse-button bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >{!showLapData? 'Show Lap Data' : 'Hide Lap Data'}</button>}
-            {showLapData && <div>
-                <LapData lapData={lapData}/>
-            </div>}
+                {showLapData && <div>
+                    <LapData lapData={lapData}/>
+                </div>}
+            </div>
 
-            {rideData && <Plot 
-                data={plotData} 
-                layout={layout} 
-                // useResizeHandler={true}
-                onRelayout={ async (event) => {
-                    console.log('onRelayout')
-                    console.log(event);
-                    setRideDataSlice(getSliceOfRideDataDependingOnTimestampsFromPlotlyRelayoutEvent(event));
-                }}
+            <div className='ride-data-div'>
 
-            />}
+                {rideData && <div className='ride-data-info text-xl'>
+                    <div>Timespan: {formatTime(timespan)}</div>
+                    <div>Average Power: {averagePower} W</div>
+                    <div>Average Heatrate: {averageHeartrate} bpm</div>
+                    <div>{timespanStartEnd[0].toLocaleTimeString()} - {timespanStartEnd[1].toLocaleTimeString()}</div>
+                </div>}
+
+                <div className='plot-div'>
+                    {rideData && <Plot
+                        data={plotData} 
+                        layout={layout} 
+                        // useResizeHandler={true}
+                        onRelayout={ async (event) => {
+                            console.log('onRelayout')
+                            console.log(event);
+                            setRideDataSlice(getSliceOfRideDataDependingOnTimestampsFromPlotlyRelayoutEvent(event));
+                        }}
+
+                    />}
+                </div>
+
+            </div>
 
             {rideDataSlice && <RideMap rideData={rideDataSlice} />}
         </div>  

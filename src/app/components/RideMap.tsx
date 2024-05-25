@@ -23,7 +23,7 @@ const RideMap = ({ rideData }: RideMapProps) => {
 
 
     return (
-        <div style={{border: "5px solid red"}}>
+        <div style={{border: "0px solid grey"}}>
             <MapContainer center={[rideData[0].position_lat, rideData[0].position_long]} zoom={13} scrollWheelZoom={false}ref={mapRef} style={{height: "70vh", width:"100vw"}}>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
