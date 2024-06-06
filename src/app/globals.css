@@ -47,10 +47,17 @@ body {
 
 .input-div {
   margin-top: 50px;
-  border: 1px solid black;
   margin: 10px;
   margin-left: auto;
+  border: 3px solid grey;
+  padding: 20px;
+}
 
+.upload-form {
+}
+.upload-form-user-message {
+  font-weight: bold;
+  font-size: 30px;
 }
 
 .parse-button {
@@ -124,3 +131,5 @@ body {
 .plot-div {
   /* border: 10px solid red; */
 }
+
+

@@ -8,6 +8,8 @@ const Plot = dynamic(() => import('react-plotly.js'), { ssr: false });
 const RideMap = dynamic(() => import ('@/app/components/RideMap'), { ssr: false });
 
 import LapData from '@/app/components/LapData';
+// import FileUpload from './FileUpload';
+import UploadForm from './UploadForm';
 
 
 export type RideData = {
@@ -96,19 +98,20 @@ const RideAnalyzer: React.FC = (): ReactElement => {
     const [averagePower, setAveragePower] = useState<number>(0);
     const [averageHeartrate, setAverageHeartrate] = useState<number>(0);
 
-    
+    const [fitFileName, setFitFileName] = useState<string>();
 
 
     useEffect(() => {
 
-        console.log('@@@@ useEffect');
+        console.log("### useEffect");
 
         if (rideDataSlice && rideDataSlice.length === 0) {
-
+            console.log('first if')
         }
 
         if (rideDataSlice) {
 
+            console.log('second if')
             console.log(rideDataSlice);
             console.log('setting time span');
             const start: Date = rideDataSlice[0].timestamp;
@@ -126,7 +129,7 @@ const RideAnalyzer: React.FC = (): ReactElement => {
             console.log('setting average heartrate');
             const totalHeartrate: number = rideDataSlice.reduce((acc, curr) => acc + curr.heart_rate, 0);
             const avgHeartrate: number = totalHeartrate / rideDataSlice.length;
-            setAverageHeartrate(Math.round(avgHeartrate));         
+            setAverageHeartrate(Math.round(avgHeartrate));   
 
         }
 
@@ -156,6 +159,9 @@ const RideAnalyzer: React.FC = (): ReactElement => {
 
 
     const parseFitFile = async (filename: string): Promise<void> => {
+
+        console.log('parsing file');
+
         try {
             const response = await fetch('http://localhost:3000/api/parse', {
               method: 'POST',
@@ -176,17 +182,12 @@ const RideAnalyzer: React.FC = (): ReactElement => {
                 d.timestamp = new Date(d.timestamp)
             ));
 
-            // todo: remove
-            console.log(data.rideData);
-            let x: any = data.rideDataDto.rideData.map((d: any) => {
-                return [d.power, d.heart_rate]
-            });
-            console.log(x);
 
             console.log('setting ride data');
             setRideData(data.rideDataDto.rideData);
             setRideDataSlice(data.rideDataDto.rideData);
             setLapData(data.rideDataDto.lapData);
+            console.log(data.rideDataDto.rideData);
 
         } catch (err) {
             console.error('Error fetching file:', err);
@@ -252,12 +253,19 @@ const RideAnalyzer: React.FC = (): ReactElement => {
 
     return (
         <div className='ride-analyzer-div'>
-            <div className='input-div'>
+            {/* <div className='input-div'>
                 <input></input>
                 <button 
                     onClick={() => parseFitFile('2024-05-15-154558-ELEMNT BOLT C5A3-45-0.fit')}
                     className="parse-button bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                 >{rideData ? 'parse again' : 'parse'}</button>
+            </div> */}
+            {/* <div className='input-div'>
+                <FileUpload />
+            </div> */}
+            <div className='input-div'>
+                <UploadForm setFitFileName={setFitFileName}/>
+                {fitFileName && <button onClick={() => parseFitFile(fitFileName)}>Parse</button>}
             </div>
 
             <div className='lap-data-div'>
@@ -296,7 +304,7 @@ const RideAnalyzer: React.FC = (): ReactElement => {
 
             </div>
 
-            {rideDataSlice && <RideMap rideData={rideDataSlice} />}
+            {/* {rideDataSlice && <RideMap rideData={rideDataSlice} />} */}
         </div>  
     )               
 }
