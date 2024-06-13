@@ -48,7 +48,7 @@ body {
 .input-div {
   margin-top: 50px;
   margin: 10px;
-  margin-left: auto;
+  /* margin-left: auto; */
   border: 3px solid grey;
   padding: 20px;
 }
@@ -131,5 +131,4 @@ body {
 .plot-div {
   /* border: 10px solid red; */
 }
-
 

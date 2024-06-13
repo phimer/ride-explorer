@@ -1,7 +1,6 @@
 // Require the module
 import fitDecoder from 'fit-decoder';
 import { promises as fs } from 'fs';
-import { get } from 'http';
 import path from 'path';
 
 
@@ -82,6 +81,7 @@ const parseFitFileAndExtractRideDataJson = async (filename: string): Promise<Rid
     
     const outputPath = path.join(process.cwd(), 'src', 'output_files', 'output.json');
     writeJsonToFile(outputPath, json);
+    console.log('wrote file to output.json');
 
     const returnData: RideDataDTO = {
       rideData: rideData,
@@ -102,17 +102,36 @@ const writeJsonToFile = async (filePath: string, data: object): Promise<void> =>
     }
 };
 
-
+// get data from json file after parsing with fitDecoder
 const getRideData = (data: ParsedDataType): RideData[] => {
     const values: RideData[] = [];
 
     let i = 0;
 
     data.records.map((record: RecordType) => {
-      if (record.type === 'record') {
+
+      if (record.type === 'record' && record.data.position_lat !== undefined) {
+         
+
+        if (i === 0) {
+          console.log('first record');
+          console.log(record.data);
+          i++;
+        }
+
+        if (record.data.position_lat > 51 || record.data.position_lat < 50) {
+          console.log('position_lat out of normal range.', record.data.position_lat);
+          console.log(record.data.timestamp);
+          console.log(record.data.power);
+        }
+
+        if (record.data.position_long < 8 || record.data.position_long > 9) {
+          console.log('position_long < 4.', record.data.position_long);
+        }
 
         if (record.data.power > 2000) {
-          console.log('power > 2000. Setting it to 150', record.data.power);
+          console.log('power > 2000. Setting it to 150');
+          // console.log(record.data.power);
           let tempRecordData = record.data;
           tempRecordData.power = 150;
           values.push(tempRecordData);

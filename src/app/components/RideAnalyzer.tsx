@@ -62,6 +62,13 @@ export type LapDataType ={
   }
 
 
+export type UserMessage = {
+    message: string;
+    type: string;
+}
+
+
+
 export const formatTime = (ms: number | undefined): string => {
 
     if (!ms) {
@@ -99,6 +106,9 @@ const RideAnalyzer: React.FC = (): ReactElement => {
     const [averageHeartrate, setAverageHeartrate] = useState<number>(0);
 
     const [fitFileName, setFitFileName] = useState<string>();
+
+    const [uploadFormUserMessage, setUploadFormUserMessage] = useState<UserMessage>({message: '', type: ''});
+
 
 
     useEffect(() => {
@@ -188,6 +198,9 @@ const RideAnalyzer: React.FC = (): ReactElement => {
             setRideDataSlice(data.rideDataDto.rideData);
             setLapData(data.rideDataDto.lapData);
             console.log(data.rideDataDto.rideData);
+            setUploadFormUserMessage({message: 'File parsed successfully', type: 'success'});
+            await sleep(3000);
+            setUploadFormUserMessage({message: '', type: 'success'});
 
         } catch (err) {
             console.error('Error fetching file:', err);
@@ -253,19 +266,17 @@ const RideAnalyzer: React.FC = (): ReactElement => {
 
     return (
         <div className='ride-analyzer-div'>
-            {/* <div className='input-div'>
-                <input></input>
-                <button 
-                    onClick={() => parseFitFile('2024-05-15-154558-ELEMNT BOLT C5A3-45-0.fit')}
-                    className="parse-button bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                >{rideData ? 'parse again' : 'parse'}</button>
-            </div> */}
-            {/* <div className='input-div'>
-                <FileUpload />
-            </div> */}
+
             <div className='input-div'>
-                <UploadForm setFitFileName={setFitFileName}/>
-                {fitFileName && <button onClick={() => parseFitFile(fitFileName)}>Parse</button>}
+                <UploadForm 
+                    setFitFileName={setFitFileName}
+                    userMessage={uploadFormUserMessage}
+                    setUserMessage={setUploadFormUserMessage}                    
+                />
+                {fitFileName && <button className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded" onClick={() => parseFitFile(fitFileName)}>Parse</button>}
+
+                {/* only for dev purposes */}
+                {/* {<button onClick={() => parseFitFile("2024-06-12-155255-ELEMNT BOLT C5A3-54-0.fit")}>Parse</button>} */}
             </div>
 
             <div className='lap-data-div'>
@@ -304,7 +315,7 @@ const RideAnalyzer: React.FC = (): ReactElement => {
 
             </div>
 
-            {/* {rideDataSlice && <RideMap rideData={rideDataSlice} />} */}
+            {rideDataSlice && <RideMap rideData={rideDataSlice} />}
         </div>  
     )               
 }
